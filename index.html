@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerador de Laudo Técnico - Saunas a Vapor</title>
+  <style>
+    /* --- ESTILO GERAL E CORES (Mantido do original) --- */
+    :root {
+      --cor-primaria: #007bff;
+      --cor-fundo: #8ea4d0;
+      --cor-card: #ffffff;
+      --cor-borda: #dee2e6;
+      --cor-sombra: rgba(0, 0, 0, 0.1);
+      --cor-texto: #495057;
+      --cor-titulo: #212529;
+    }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--cor-fundo);
+      color: var(--cor-texto);
+    }
+    h1 {
+      text-align: center;
+      color: var(--cor-titulo);
+    }
+    /* --- ESTRUTURA DO FORMULÁRIO --- */
+    .form-section {
+      border: 1px solid var(--cor-borda); 
+      padding: 20px; 
+      margin: 20px 0; 
+      border-radius: 8px; 
+      background-color: var(--cor-card);
+      box-shadow: 0 4px 8px var(--cor-sombra);
+    }
+    .form-group {
+      margin-bottom: 18px;
+    }
+    label, .form-group > span {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    input[type="text"], input[type="date"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 12px 15px; 
+      border-radius: 8px;
+      border: 1px solid var(--cor-borda);
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+    }
+    /* --- Layout para campos lado a lado --- */
+    .multi-input-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
+    .checkbox-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+    }
+    .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      width: auto;
+      margin-right: 20px;
+      font-weight: normal;
+    }
+    .checkbox-group label input {
+        margin-right: 8px;
+    }
+    .input-with-checkbox {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 15px;
+        align-items: center;
+    }
+    /* --- BOTÃO PRINCIPAL --- */
+    #btnGerarLaudo {
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+    #btnGerarLaudo:hover {
+      background-color: #218838;
+    }
+    /* --- SEÇÃO DE PEÇAS --- */
+    #pecasLista h4 {
+      margin-top: 20px; margin-bottom: 15px; padding-bottom: 8px;
+      border-bottom: 2px solid var(--cor-primaria); color: var(--cor-titulo);
+    }
+    #pecasLista h4:first-child { margin-top: 0; }
+    .peca-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .peca-item label {
+        font-weight: normal;
+    }
+    .quantidade-input {
+      width: 70px;
+      padding: 8px;
+      text-align: center;
+    }
+    /* --- PREVIEW DAS FOTOS --- */
+    #previewFotos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .preview-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--cor-borda);
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Gerador de Laudo Técnico - Saunas a Vapor</h1>
+
+<form id="laudoForm">
+    <div class="form-section">
+      <h2>Informações Gerais</h2>
+      <div class="form-group">
+        <label for="cliente">Cliente:</label>
+        <input type="text" id="cliente" required>
+      </div>
+      <div class="form-group">
+        <label for="raId">RA/ID:</label>
+        <input type="text" id="raId" required>
+      </div>
+      <div class="form-group">
+        <label for="tipoAtendimento">Tipo de Atendimento:</label>
+        <select id="tipoAtendimento" required>
+          <option value="">-- Escolha --</option>
+          <option value="Atendimento Externo">Atendimento Externo</option>
+          <option value="Atendimento Interno">Atendimento Interno</option>
+          <option value="Autorizado">Autorizado</option>
+        </select>
+      </div>
+
+      <div class="form-group hidden" id="localAtendimentoBox">
+        <label for="localAtendimento">Local de Atendimento:</label>
+        <input type="text" id="localAtendimento">
+      </div>
+
+      <div class="form-group">
+        <label for="modelo">Modelo do Equipamento:</label>
+        <select id="modelo" required>
+          <option value="">-- Escolha --</option>
+        </select>
+      </div>
+      <div class="form-group">
+          <label for="dataFabricacao">Data de Fabricação:</label>
+          <div class="input-with-checkbox">
+              <input type="date" id="dataFabricacao" required>
+              <label><input type="checkbox" onclick="toggleInput(this, 'dataFabricacao')"> Não tem</label>
+          </div>
+        </div>
+      <div class="form-group">
+          <label for="numSerie">Número de Série:</label>
+          <input type="text" id="numSerie" required>
+      </div>
+      <div class="form-group">
+          <label for="codDefeito">Código de Defeito:</label>
+          <select id="codDefeito" required><option value="">-- Escolha --</option></select>
+      </div>
+      <div class="form-group">
+          <label for="codCausa">Código de Causa:</label>
+          <select id="codCausa" required><option value="">-- Escolha --</option></select>
+      </div>
+      <div class="form-group">
+        <label for="garantia">Está em Garantia?</label>
+        <select id="garantia" required>
+          <option value="">-- Escolha --</option>
+          <option value="Técnica">Técnica</option>
+          <option value="Cortesia">Cortesia</option>
+          <option value="S/ Anomalia">S/ Anomalia</option>
+          <option value="Garantia/Reincidência">Garantia/Reincidência</option>
+          <option value="S/ Garantia">S/ Garantia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <span>Acessórios:</span>
+        <div id="acessoriosContainer" class="checkbox-group"></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Análise Técnica</h2>
+      <div class="form-group">
+          <label for="obsTecnicas">Observações Técnicas:</label>
+          <textarea id="obsTecnicas" rows="6" required></textarea>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Resultados dos Testes</h2>
+       <div class="form-group">
+        <span>Corrente (A):</span>
+        <div class="multi-input-group">
+          <label>R <input type="number" id="correnteR" min="0" step="0.1" required></label>
+          <label>S <input type="number" id="correnteS" min="0" step="0.1" required></label>
+          <label>T <input type="number" id="correnteT" min="0" step="0.1" required></label>
+        </div>
+      </div>
+       <div class="form-group">
+        <span>Tensão (V):</span>
+        <div class="multi-input-group">
+          <label>R <input type="number" id="tensaoR" min="0" step="0.1" required></label>
+          <label>S <input type="number" id="tensaoS" min="0" step="0.1" required></label>
+          <label>T <input type="number" id="tensaoT" min="0" step="0.1" required></label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-section hidden" id="instalacaoBox">
+        <h2>Informações da Instalação e Ambiente</h2>
+        
+        <div class="form-group">
+            <span>Instalação Elétrica</span>
+            <div class="form-group">
+                <label for="disjuntorAparelho">Disjuntor do Aparelho (A):</label>
+                <input type="number" id="disjuntorAparelho" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="bitolaFio">Bitola do Fio (mm²):</label>
+                <input type="number" id="bitolaFio" step="0.1" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="distanciaEletrica">Distância Disjuntor-Equipamento (m):</label>
+                <input type="number" id="distanciaEletrica" step="0.1" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="disjuntorDR">Disjuntor DR (A):</label>
+                <div class="input-with-checkbox">
+                    <input type="number" id="disjuntorDR" min="0" required>
+                    <label><input type="checkbox" onclick="toggleInput(this, 'disjuntorDR')"> Sem DR</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span>Instalação Hidráulica e Vapor</span>
+             <div class="form-group">
+                <label for="comprimentoTubulacao">Comprimento Tubulação Vapor (m):</label>
+                <input type="number" id="comprimentoTubulacao" step="0.1" min="0" required>
+            </div>
+             <div class="form-group">
+                <label for="diametroTubulacao">Diâmetro da Tubulação (mm):</label>
+                <input type="number" id="diametroTubulacao" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="qtdCotovelos">Quantidade de Cotovelos:</label>
+                <select id="qtdCotovelos" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Não tem">Não tem</option>
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="usaReducao">Utiliza Redução na Saída?</label>
+                <select id="usaReducao" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Não">Não</option>
+                    <option value="Sim">Sim</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <span>Informações do Ambiente</span>
+             <div class="form-group">
+                <span>Medidas do Ambiente (m):</span>
+                <div class="multi-input-group">
+                    <label>Altura Maior <input type="number" id="medidaAlturaMaior" step="0.01" oninput="calcularVolume()" required></label>
+                    <label>Altura Menor <input type="number" id="medidaAlturaMenor" step="0.01" oninput="calcularVolume()" required></label>
+                    <label>Largura <input type="number" id="medidaLargura" step="0.01" oninput="calcularVolume()" required></label>
+                    <label>Comprimento <input type="number" id="medidaComprimento" step="0.01" oninput="calcularVolume()" required></label>
+                    <label>Volume (m³) <input type="number" id="volumeCalculado" step="0.01" readonly style="background-color: #e9ecef;"></label>
+                    <label>Diâmetro Respiro <input type="number" id="diametroRespiro" step="0.1" required></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="distanciaBulbo">Distância do Bulbo Sensor (m):</label>
+                <input type="number" id="distanciaBulbo" step="0.1" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="temIsolacao">Cômodo com vermiculita?</label>
+                <select id="temIsolacao" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Não">Não</option>
+                    <option value="Sim">Sim</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <span>Outras Informações</span>
+            <div class="form-group">
+                <label for="quadroInstalado">Instalado com Quadro:</label>
+                <select id="quadroInstalado" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Analógico">Analógico</option>
+                    <option value="Digital">Digital</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="usoGerador">Uso do Gerador:</label>
+                <select id="usoGerador" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Residencial">Residencial</option>
+                    <option value="Comercial">Comercial</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quemAvaliou">Quem abriu para avaliar?</label>
+                <select id="quemAvaliou" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Lojista">Lojista</option>
+                    <option value="Assistente Técnico">Assistente Técnico</option>
+                    <option value="Consumidor">Consumidor</option>
+                </select>
+            </div>
+             <div class="form-group">
+                <label for="tipoAbastecimento">Como é feito o abastecimento?</label>
+                <select id="tipoAbastecimento" required>
+                    <option value="">-- Escolha --</option>
+                    <option value="Rua">Rua</option>
+                    <option value="Poço">Poço</option>
+                    <option value="Utiliza Filtro">Utiliza Filtro</option>
+                    <option value="Caixa D'água">Caixa D'água</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section hidden" id="pecasBox">
+        <h2>Peças para Reposição</h2>
+        <div id="pecasLista"></div>
+    </div>
+
+    <div class="form-section">
+      <h2>Fotos do Equipamento</h2>
+      <div class="form-group">
+        <label for="fotos">Carregar fotos (múltiplas):</label>
+        <input type="file" id="fotos" multiple accept="image/*" required>
+        <div id="previewFotos"></div>
+      </div>
+    </div>
+
+    <button type="button" id="btnGerarLaudo" onclick="gerarLaudo()">Gerar Laudo Técnico</button>
+  </form>
+
+<script>
+// --- CONSTANTES PARA A API DO GOOGLE SHEETS ---
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwAfRdXiSIP-LPujZmrFVv9hEp0jZRf1gY_JKQgyx78IKFfzdGtClRB0ce5aKhS5y8x/exec'; 
+const TOKEN = 'SUA_CHAVE_BEM_SECRETA_AQUI'; 
+
+// --- BANCO DE DADOS DA SAUNA ---
+const dadosSauna = {
+    modelos: {
+        // Compact Line Inox
+        "Compact Line Inox 6kW 220B": { familia: "Compact Line Inox", codigo: "001482", tensaoPotencia: "220V Bifásico / 6kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 6kW 220T": { familia: "Compact Line Inox", codigo: "001483", tensaoPotencia: "220V Trifásico / 6kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 6kW 380T": { familia: "Compact Line Inox", codigo: "001484", tensaoPotencia: "380V Trifásico / 6kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 9kW 220B": { familia: "Compact Line Inox", codigo: "001485", tensaoPotencia: "220V Bifásico / 9kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 9kW 220T": { familia: "Compact Line Inox", codigo: "001486", tensaoPotencia: "220V Trifásico / 9kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 9kW 380T": { familia: "Compact Line Inox", codigo: "001487", tensaoPotencia: "380V Trifásico / 9kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 12kW 220B": { familia: "Compact Line Inox", codigo: "001488", tensaoPotencia: "220V Bifásico / 12kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 12kW 220T": { familia: "Compact Line Inox", codigo: "001489", tensaoPotencia: "220V Trifásico / 12kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 12kW 380T": { familia: "Compact Line Inox", codigo: "001490", tensaoPotencia: "380V Trifásico / 12kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 15kW 220T": { familia: "Compact Line Inox", codigo: "001491", tensaoPotencia: "220V Trifásico / 15kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 15kW 380T": { familia: "Compact Line Inox", codigo: "001492", tensaoPotencia: "380V Trifásico / 15kW", grupoPecas: "grupoCompactLineInox1" },
+        "Compact Line Inox 18kW 220T": { familia: "Compact Line Inox", codigo: "007300", tensaoPotencia: "220V Trifásico / 18kW", grupoPecas: "grupoCompactLineInox2" },
+        "Compact Line Inox 18kW 380T": { familia: "Compact Line Inox", codigo: "007301", tensaoPotencia: "380V Trifásico / 18kW", grupoPecas: "grupoCompactLineInox2" },
+        "Compact Line Inox 24kW 220T": { familia: "Compact Line Inox", codigo: "007302", tensaoPotencia: "220V Trifásico / 24kW", grupoPecas: "grupoCompactLineInox2" },
+        "Compact Line Inox 24kW 380T": { familia: "Compact Line Inox", codigo: "007303", tensaoPotencia: "380V Trifásico / 24kW", grupoPecas: "grupoCompactLineInox2" },
+        "Compact Line Inox 27kW 220T": { familia: "Compact Line Inox", codigo: "007304", tensaoPotencia: "220V Trifásico / 27kW", grupoPecas: "grupoCompactLineInox2" },
+        "Compact Line Inox 27kW 380T": { familia: "Compact Line Inox", codigo: "007305", tensaoPotencia: "380V Trifásico / 27kW", grupoPecas: "grupoCompactLineInox2" },
+        // Universal
+        "Universal 6kW 220B": { familia: "Universal", codigo: "018332", tensaoPotencia: "220V Bifásico / 6kW", grupoPecas: "grupoUniversal" },
+        "Universal 6kW 220T": { familia: "Universal", codigo: "018332", tensaoPotencia: "220V Trifásico / 6kW", grupoPecas: "grupoUniversal" },
+        "Universal 6kW 380T": { familia: "Universal", codigo: "018332", tensaoPotencia: "380V Trifásico / 6kW", grupoPecas: "grupoUniversal" },
+        "Universal 9kW 220B": { familia: "Universal", codigo: "018333", tensaoPotencia: "220V Bifásico / 9kW", grupoPecas: "grupoUniversal" },
+        "Universal 9kW 220T": { familia: "Universal", codigo: "018333", tensaoPotencia: "220V Trifásico / 9kW", grupoPecas: "grupoUniversal" },
+        "Universal 9kW 380T": { familia: "Universal", codigo: "018333", tensaoPotencia: "380V Trifásico / 9kW", grupoPecas: "grupoUniversal" },
+        "Universal 12kW 220B": { familia: "Universal", codigo: "018334", tensaoPotencia: "220V Bifásico / 12kW", grupoPecas: "grupoUniversal" },
+        "Universal 12kW 220T": { familia: "Universal", codigo: "018334", tensaoPotencia: "220V Trifásico / 12kW", grupoPecas: "grupoUniversal" },
+        "Universal 12kW 380T": { familia: "Universal", codigo: "018334", tensaoPotencia: "380V Trifásico / 12kW", grupoPecas: "grupoUniversal" },
+        // Steam Inox
+        "Steam Inox 4kW 220B": { familia: "Steam Inox", codigo: "025527", tensaoPotencia: "220V Bifásico / 4kW", grupoPecas: "grupoSteamInox1" },
+        "Steam Inox 4kW 220T": { familia: "Steam Inox", codigo: "025527", tensaoPotencia: "220V Trifásico / 4kW", grupoPecas: "grupoSteamInox1" },
+        "Steam Inox 4kW 380T": { familia: "Steam Inox", codigo: "025527", tensaoPotencia: "380V Trifásico / 4kW", grupoPecas: "grupoSteamInox1" },
+        "Steam Inox 6kW 220B": { familia: "Steam Inox", codigo: "019622", tensaoPotencia: "220V Bifásico / 6kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 6kW 220T": { familia: "Steam Inox", codigo: "019622", tensaoPotencia: "220V Trifásico / 6kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 6kW 380T": { familia: "Steam Inox", codigo: "019622", tensaoPotencia: "380V Trifásico / 6kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 9kW 220B": { familia: "Steam Inox", codigo: "019623", tensaoPotencia: "220V Bifásico / 9kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 9kW 220T": { familia: "Steam Inox", codigo: "019623", tensaoPotencia: "220V Trifásico / 9kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 9kW 380T": { familia: "Steam Inox", codigo: "019623", tensaoPotencia: "380V Trifásico / 9kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 12kW 220B": { familia: "Steam Inox", codigo: "019624", tensaoPotencia: "220V Bifásico / 12kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 12KW 220T": { familia: "Steam Inox", codigo: "019624", tensaoPotencia: "220V Trifásico / 12kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 12kW 380T": { familia: "Steam Inox", codigo: "019624", tensaoPotencia: "380V Trifásico / 12kW", grupoPecas: "grupoSteamInox2" },
+        "Steam Inox 15kW 220B": { familia: "Steam Inox", codigo: "025528", tensaoPotencia: "220V Bifásico / 15kW", grupoPecas: "grupoSteamInox3" },
+        "Steam Inox 15kW 220T": { familia: "Steam Inox", codigo: "025528", tensaoPotencia: "220V Trifásico / 15kW", grupoPecas: "grupoSteamInox3" },
+        "Steam Inox 15kW 380T": { familia: "Steam Inox", codigo: "025528", tensaoPotencia: "380V Trifásico / 15kW", grupoPecas: "grupoSteamInox3" },
+        "Steam Inox 18kW 220T": { familia: "Steam Inox", codigo: "025529", tensaoPotencia: "220V Trifásico / 18kW", grupoPecas: "grupoSteamInox3" },
+        "Steam Inox 18kW 380T": { familia: "Steam Inox", codigo: "025529", tensaoPotencia: "380V Trifásico / 18kW", grupoPecas: "grupoSteamInox3" },
+        // Forno
+        "Forno 4kW (residencial) ": { familia: "Forno", codigo: "018565", tensaoPotencia: "220V Bifásico / 4kW", grupoPecas: "grupoForno" },
+        "Forno 4kW (comercial) ": { familia: "Forno", codigo: "019517", tensaoPotencia: "220V Bifásico / 4kW", grupoPecas: "grupoForno" },
+        "Forno 6kW (residencial) ": { familia: "Forno", codigo: "018566", tensaoPotencia: "220V|380V  Bif.|Trif. / 6kW", grupoPecas: "grupoForno" },
+        "Forno 6kW (comercial) ": { familia: "Forno", codigo: "019518", tensaoPotencia: "220V|380V  Bif.|Trif. / 6kW", grupoPecas: "grupoForno" },
+        "Forno 7,5kW (residencial) ": { familia: "Forno", codigo: "018567", tensaoPotencia: "220V|380V  Bif.|Trif. / 7,5kW", grupoPecas: "grupoForno" },
+        "Forno 7,5kW (comercial) ": { familia: "Forno", codigo: "019519", tensaoPotencia: "220V|380V  Bif.|Trif. / 7,5kW", grupoPecas: "grupoForno" },
+        "Forno 10kW (residencial) ": { familia: "Forno", codigo: "018568", tensaoPotencia: "220V|380V  Bif.|Trif. / 10kW", grupoPecas: "grupoForno" },
+        "Forno 10kW (comercial) ": { familia: "Forno", codigo: "019520", tensaoPotencia: "220V|380V  Bif.|Trif. / 10kW", grupoPecas: "grupoForno" },
+        "Forno 12kW (residencial) ": { familia: "Forno", codigo: "018569", tensaoPotencia: "220V|380V  Bif.|Trif. / 12kW", grupoPecas: "grupoForno" },
+        "Forno 12kW (comercial) ": { familia: "Forno", codigo: "019521", tensaoPotencia: "220V|380V  Bif.|Trif. / 12kW", grupoPecas: "grupoForno" },
+        "Forno 15kW (residencial) ": { familia: "Forno", codigo: "018570", tensaoPotencia: "220V|380V  Bif.|Trif. / 15kW", grupoPecas: "grupoForno" },
+        "Forno 15kW (comercial) ": { familia: "Forno", codigo: "019522", tensaoPotencia: "220V|380V  Bif.|Trif. / 15kW", grupoPecas: "grupoForno" },
+
+
+    },
+    acessorios: {
+        "quadroanalogico": "Quadro de Comando Analógico",
+        "quadrocomando": "Quadro de Comando Digital",
+        "quadrotouch": "Quadro de Comando Touch",
+    },
+    defeitos: {
+        "GVCC00": "Contator não atraca",
+        "GVCC01": "Polos derretidos",
+        "GVCC02": "Bobina queimada",
+        "GVCC03": "Contator com fuga de corrente",
+        "GVSN00": "Painel apagado",
+        "GVSN01": "Sensor de nível aberto (Eicos)",
+        "GVRS00": "Resistência queimada",
+        "GVRS01": "Resistência com fuga de corrente",
+        "GVRS02": "Resistência com filamentos rompidos",
+        "GVRS03": "Resistência com vazamento no filamento",
+        "GVRS04": "Baixo rendimento",
+        "GVRT00": "Reservatório com vazamento na solda",
+        "GVRT01": "Reservatório furado",
+        "GVRT02": "Reservatório frio com vazamento",
+        "GVRT03": "Reservatório frio derretido",
+        "GVRT04": "Vazamento na mangueira do vaso comunicante",
+        "GVRT05": "Prisioneiro está quebrado",
+        "GVGB00": "Gabinete amassado",
+        "GVGB01": "Gabinete deformado",
+        "GVGB02": "Gabinete oxidado",
+        "GVGB03": "Gabinete riscado",
+        "GVET00": "Etiqueta rasgada",
+        "GVSA00": "Sem anomalia",
+        "GVBT00": "Botão liga/desl quebrado",
+        "GVBT01": "Botão liga/desl queimado",
+        "GVBT02": "Botão liga/desl travado",
+        "GVTB00": "Boia travada",
+        "GVTB01": "Boia com vazamento",
+        "GVTB02": "Boia com infiltração",
+        "GVLD00": "LED verde queimado",
+        "GVLD01": "LED vermelho queimado",
+        "GVLD02": "LED amarelo queimado",
+        "GVCB00": "Cabos derretidos",
+        "GVDJ00": "Disjuntor dimensionado incorretamente",
+        "GVNF00": "Não funciona",
+        "GVRE00": "Reinstalação"
+    },
+    causas: {
+        "CGVC07": "Contato colado",
+        "CGVC01": "Mau aperto nos terminais",
+        "CGVC02": "Bobina aberta",
+        "CGVC03": "Contato aberto",
+        "CGVR00": "Baixa isolação do filamento",
+        "CGVR01": "Cabo encostando na carcaça",
+        "CGVR02": "Trinca no tubo",
+        "CGVR03": "Calcário",
+        "CGVR04": "Trabalho sem água",
+        "CGVB00": "Falha de processo (fornecedor)",
+        "CGVB01": "Sensor de nível com contato aberto",
+        "CGVB02": "Sensor de nível com contato fechado",
+        "CGVB03": "Sensor de nível travado",
+        "CGVM00": "Falha de processo (produção)",
+        "CGV000": "Falta de manutenção preventiva",
+        "CGV001": "Transporte",
+        "CGV002": "Manuseio",
+        "CGV003": "Instalação incorreta",
+        "CGV004": "Oxidação no reservatório",
+        "CGV005": "Falta d'água",
+        "CGV006": "Mexido por terceiros"
+    },
+    pecas: {
+        "grupoCompactLineInox1": {
+            "Reservatórios": {
+                "20157": "Reserv. 6,0 / 9,0 / 12 kW com S.V Ø 1 1/2” (01 resistência)",
+                "20158": "Reserv. 15,0 kW com S.V Ø 2” (02 resistências)"
+            },
+            "Resistências": {
+                "7887": "Resistência 6,0 kW com rosca 1 1/2”",
+                "7888": "Resistência 9,0 kW com rosca 1 1/2”",
+                "10116": "Resistência 6,0 kW Flangeada",
+                "10117": "Resistência 9,0 kW Flangeada",
+                "17870": "Resistência 12,0 kW Flangeada"
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão)",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de boia CL e Universal"
+            },
+            "Componentes Elétricos": {
+                "8334": "Contactor – 80 A (24 kW 220 trif / 27 kW 220 trif)",
+                "8333": "Contactor 60 A – 220 VAC 50 / 60 HZ",
+                "8301": "Chave – liga / desliga",
+                "8374": "Micro Swift",
+                "26088": "Termostato bimetálico(rearme)",
+                "8347": "Sinal fluorescente vermelho – 220V",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+            "Gabinete e Estética": {
+                "17021": "Gabinete plástico GV 6 kW a 15 kW",
+                "5997": "Conjunto de etiqueta CL – inox"
+            },
+            "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        },
+        "grupoCompactLineInox2": {
+            "Reservatórios": {
+                "16119": "Reserv. 18,0 kW com S.V Ø 2” (02 resistências)",
+                "16120": "Reserv. 24,0 / 27,0 kW com S.V Ø 2” (03 resistências)"
+            },
+            "Resistências": {
+                "10116": "Resistência 6,0 kW Flangeada",
+                "10117": "Resistência 9,0 kW Flangeada",
+                "17870": "Resistência 12,0 kW Flangeada",
+                "7887": "Resistência 6,0 kW com rosca 1 1/2”",
+                "7888": "Resistência 9,0 kW com rosca 1 1/2”"
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão) Sipla",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de Boia Universal e CL"
+            },
+            "Componentes Elétricos": {
+                "8333": "Contactor 60 A",
+                "8334": "Contactor – 80 A (24 kW 220 trif / 27 kW 220 trif)",
+                "8301": "Chave – liga / desliga",
+                "8374": "Micro Swift",
+                "26088": "Termostato Bimetálico",
+                "8347": "Sinal fluorescente vermelho – 220V",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+            "Gabinete e Estética": {
+                "10013": "Gabinete plástico GV 18 kW a 27 kW",
+                "5997": "Conjunto de etiqueta CL – inox"
+            },
+            "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        },
+        "grupoSteamInox1": {
+            "Resistências": {
+                "CODIGO_RESISTENCIA_4KW": "Resistência 4,0 kW Flangeada" // <-- SUBSTITUIR PELO CÓDIGO CORRETO
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão)",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de Boia"
+            },
+            "Componentes Elétricos": {
+                "8374": "Micro Swift",
+                "26088": "Termostato bimetálico(rearme)",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+            "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        },
+        "grupoSteamInox2": {
+            "Resistências": {
+                "10116": "Resistência 6,0 kW Flangeada",
+                "10117": "Resistência 9,0 kW Flangeada",
+                "17870": "Resistência 12,0 kW Flangeada"
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão)",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de Boia"
+            },
+            "Componentes Elétricos": {
+                "8374": "Micro Swift",
+                "26088": "Termostato bimetálico(rearme)",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+            "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        },
+        "grupoSteamInox3": {
+            "Resistências": {
+                "10116": "Resistência 6,0 kW Flangeada",
+                "10117": "Resistência 9,0 kW Flangeada",
+                "17870": "Resistência 12,0 kW Flangeada"
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão)",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de Boia"
+            },
+            "Componentes Elétricos": {
+                "8374": "Micro Swift",
+                "26088": "Termostato bimetálico(rearme)",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+           "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        },
+        "grupoForno": {
+            "Gabinete e Estética": {
+                "17975": "Gabinete Aço INOX"
+            },
+            "Resistências": {
+               "17367": "Resistência 220V 2,0kW",
+                "17368": "Resistência 220V 2,5kW",
+               "19088": "Resistência 220V 3,3kW",
+                "8404": "Resistência Especial (comercial) 2,0kW",
+                "8405": "Resistência Especial (comercial) 2,4kW",
+                "19523": "Resistência Especial (comercial) 3,3kW"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            }
+        },
+        "grupoUniversal": {
+            "Reservatórios": {
+                "20157": "Reserv. 6,0 / 9,0 / 12 kW com S.V Ø 1 1/2” (01 resistência)"
+            },
+            "Resistências": {
+                "10116": "Resistência 6,0 kW Flangeada",
+                "10117": "Resistência 9,0 kW Flangeada",
+                "17870": "Resistência 12,0 kW Flangeada"
+            },
+            "Componentes de Nível e Vedação": {
+                "10024": "Boia plástica universal (reposição para boia plástica e latão)",
+                "22431": "Boia plástica",
+                "24341": "Sensor de nível",
+                "25630": "Caixa de boia CL e Universal"
+            },
+            "Componentes Elétricos": {
+                "8374": "Micro Swift",
+                "26088": "Termostato bimetálico(rearme)",
+                "8347": "Sinal fluorescente vermelho – 220V",
+                "8341": "Sinal fluorescente verde – 220V"
+            },
+            "Gabinete e Estética": {
+                "17021": "Gabinete plástico GV 6 kW a 15 kW",
+            },
+            "Acessórios": {
+                "6037": "Frasco de vidro do Alimentador de essência"
+            },
+            "Outros": {
+                "0000": "Sem anomalia",
+            },
+        }
+    }
+};
+
+// --- FUNÇÕES DE INICIALIZAÇÃO E LÓGICA DO FORMULÁRIO ---
+window.onload = function() {
+    const modeloSelect = document.getElementById('modelo');
+    const defeitoSelect = document.getElementById('codDefeito');
+    const causaSelect = document.getElementById('codCausa');
+    const acessoriosContainer = document.getElementById('acessoriosContainer');
+
+    for (const nomeModelo in dadosSauna.modelos) {
+        modeloSelect.innerHTML += `<option value="${nomeModelo}">${nomeModelo}</option>`;
+    }
+    for (const codDefeito in dadosSauna.defeitos) {
+        defeitoSelect.innerHTML += `<option value="${codDefeito}">${codDefeito} - ${dadosSauna.defeitos[codDefeito]}</option>`;
+    }
+    for (const codCausa in dadosSauna.causas) {
+        causaSelect.innerHTML += `<option value="${codCausa}">${codCausa} - ${dadosSauna.causas[codCausa]}</option>`;
+    }
+    for (const idAcessorio in dadosSauna.acessorios) {
+        acessoriosContainer.innerHTML += `<label><input type="checkbox" name="acessorios" value="${dadosSauna.acessorios[idAcessorio]}"> ${dadosSauna.acessorios[idAcessorio]}</label>`;
+    }
+};
+
+document.getElementById('tipoAtendimento').addEventListener('change', function() {
+    const instalacaoBox = document.getElementById('instalacaoBox');
+    const localAtendimentoBox = document.getElementById('localAtendimentoBox');
+    const localAtendimentoInput = document.getElementById('localAtendimento');
+    const pecasBox = document.getElementById('pecasBox'); // Elemento da seção de peças
+    const tipoSelecionado = this.value;
+
+    if (tipoSelecionado === 'Atendimento Externo' || tipoSelecionado === 'Autorizado') {
+        localAtendimentoBox.classList.remove('hidden');
+        localAtendimentoInput.disabled = false;
+        localAtendimentoInput.required = true;
+        instalacaoBox.classList.remove('hidden');
+    } else {
+        localAtendimentoBox.classList.add('hidden');
+        localAtendimentoInput.disabled = true;
+        localAtendimentoInput.required = false;
+        localAtendimentoInput.value = '';
+        instalacaoBox.classList.add('hidden');
+    }
+
+    // *** CORREÇÃO APLICADA AQUI ***
+    // Mostra ou esconde a seção de peças com base na seleção do atendimento
+    if (tipoSelecionado) {
+        pecasBox.classList.remove('hidden');
+    } else {
+        pecasBox.classList.add('hidden');
+    }
+});
+
+document.getElementById('modelo').addEventListener('change', function() {
+    const listaPecas = document.getElementById('pecasLista');
+    const modeloSelecionado = this.value;
+    
+    listaPecas.innerHTML = ''; // Limpa a lista de peças anterior
+
+    if (!modeloSelecionado) {
+        return; // Se nenhum modelo for selecionado, não faz nada
+    }
+
+    const infoModelo = dadosSauna.modelos[modeloSelecionado];
+    if (!infoModelo) return; // Segurança caso o modelo não seja encontrado
+
+    const grupoDePecas = dadosSauna.pecas[infoModelo.grupoPecas];
+
+    if (grupoDePecas) {
+        for (const categoria in grupoDePecas) {
+            listaPecas.innerHTML += `<h4>${categoria}</h4>`;
+            for (const codigo in grupoDePecas[categoria]) {
+                const nomePeca = grupoDePecas[categoria][codigo];
+                listaPecas.innerHTML += `
+                        <div class="peca-item">
+                            <label><input type="checkbox" name="pecas" value="${codigo}" data-nome="${nomePeca}"> ${nomePeca}</label>
+                            <input type="number" class="quantidade-input" value="1" min="1">
+                        </div>`;
+            }
+        }
+    }
+});
+
+
+const imagensParaLaudo = [];
+document.getElementById("fotos").addEventListener("change", function(event) {
+    const preview = document.getElementById("previewFotos");
+    preview.innerHTML = "";
+    imagensParaLaudo.length = 0;
+    Array.from(event.target.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.classList.add("preview-img");
+            preview.appendChild(img);
+            imagensParaLaudo.push(e.target.result);
+        }
+        reader.readAsDataURL(file);
+    });
+});
+
+function toggleInput(checkbox, inputId) {
+    const input = document.getElementById(inputId);
+    input.disabled = checkbox.checked;
+    if (checkbox.checked) input.value = '';
+}
+
+function calcularVolume() {
+    const altMaior = parseFloat(document.getElementById('medidaAlturaMaior').value) || 0;
+    const altMenor = parseFloat(document.getElementById('medidaAlturaMenor').value) || 0;
+    const largura = parseFloat(document.getElementById('medidaLargura').value) || 0;
+    const comprimento = parseFloat(document.getElementById('medidaComprimento').value) || 0;
+
+    if (altMaior > 0 && altMenor > 0 && largura > 0 && comprimento > 0) {
+        const alturaMedia = (altMaior + altMenor) / 2;
+        const volume = alturaMedia * largura * comprimento;
+        document.getElementById('volumeCalculado').value = volume.toFixed(2);
+    } else {
+        document.getElementById('volumeCalculado').value = '';
+    }
+}
+
+
+// --- FUNÇÃO GERAR LAUDO E ENVIAR PARA PLANILHA ---
+// --- FUNÇÃO GERAR LAUDO E ENVIAR PARA PLANILHA ---
+function gerarLaudo() {
+    // 1. VALIDAÇÃO DOS CAMPOS
+    const erros = [];
+    const camposObrigatorios = {
+        cliente: "Cliente", raId: "RA/ID", tipoAtendimento: "Tipo de Atendimento",
+        modelo: "Modelo do Equipamento", numSerie: "Número de Série",
+        codDefeito: "Código de Defeito", codCausa: "Código de Causa",
+        garantia: "Garantia", obsTecnicas: "Observações Técnicas",
+        // Campos de Teste
+        correnteR: "Corrente (R)", correnteS: "Corrente (S)", correnteT: "Corrente (T)",
+        tensaoR: "Tensão (R)", tensaoS: "Tensão (S)", tensaoT: "Tensão (T)"
+    };
+    
+    // Validação dos campos principais
+    for (const id in camposObrigatorios) {
+        if (!document.getElementById(id).value) {
+            erros.push(`O campo '${camposObrigatorios[id]}' é obrigatório.`);
+        }
+    }
+    
+    // Validação especial para campos com checkbox
+    const dataFabricacaoInput = document.getElementById('dataFabricacao');
+    if (!dataFabricacaoInput.disabled && !dataFabricacaoInput.value) {
+        erros.push("O campo 'Data de Fabricação' é obrigatório (ou marque 'Não tem').");
+    }
+
+    // *** INÍCIO DA CORREÇÃO ***
+    // Validação específica para campos de Atendimento Externo/Autorizado
+    const tipoAtendimento = document.getElementById('tipoAtendimento').value;
+    if (tipoAtendimento === 'Atendimento Externo' || tipoAtendimento === 'Autorizado') {
+        const camposExternosObrigatorios = {
+            localAtendimento: "Local de Atendimento",
+            disjuntorAparelho: "Disjuntor do Aparelho",
+            bitolaFio: "Bitola do Fio",
+            distanciaEletrica: "Distância Disjuntor-Equipamento",
+            comprimentoTubulacao: "Comprimento Tubulação Vapor",
+            diametroTubulacao: "Diâmetro da Tubulação",
+            qtdCotovelos: "Quantidade de Cotovelos",
+            usaReducao: "Utiliza Redução na Saída",
+            medidaAlturaMaior: "Medida Altura Maior",
+            medidaAlturaMenor: "Medida Altura Menor",
+            medidaLargura: "Medida Largura",
+            medidaComprimento: "Medida Comprimento",
+            diametroRespiro: "Diâmetro Respiro",
+            distanciaBulbo: "Distância do Bulbo Sensor",
+            temIsolacao: "Cômodo com vermiculita",
+            quadroInstalado: "Instalado com Quadro",
+            usoGerador: "Uso do Gerador",
+            quemAvaliou: "Quem abriu para avaliar",
+            tipoAbastecimento: "Como é feito o abastecimento",
+        };
+
+        for (const id in camposExternosObrigatorios) {
+            if (!document.getElementById(id).value) {
+                erros.push(`O campo '${camposExternosObrigatorios[id]}' é obrigatório.`);
+            }
+        }
+        
+        // Validação especial para Disjuntor DR quando visível
+        const drInput = document.getElementById('disjuntorDR');
+        if (!drInput.disabled && !drInput.value) {
+            erros.push("O campo 'Disjuntor DR' é obrigatório (ou marque 'Sem DR').");
+        }
+    }
+
+
+    const pecasSelecionadas = document.querySelectorAll('#pecasLista input[type="checkbox"]:checked').length;
+    if (pecasSelecionadas === 0) {
+        erros.push("É obrigatório selecionar pelo menos uma peça para reposição.");
+    }
+    if (imagensParaLaudo.length === 0) {
+        erros.push("É necessário anexar pelo menos uma foto.");
+    }
+
+    if (erros.length > 0) {
+        alert("Por favor, corrija os seguintes erros:\n\n- " + erros.join("\n- "));
+        return;
+    }
+
+    // 2. COLETA DE DADOS
+    const modeloSelecionado = document.getElementById("modelo").value;
+    const infoModelo = dadosSauna.modelos[modeloSelecionado];
+    const codDefeitoSelecionado = document.getElementById("codDefeito").value;
+    const nomeDefeito = dadosSauna.defeitos[codDefeitoSelecionado];
+    const codCausaSelecionado = document.getElementById("codCausa").value;
+    const nomeCausa = dadosSauna.causas[codCausaSelecionado];
+    
+    const disjuntorDRInput = document.getElementById('disjuntorDR');
+    const disjuntorDRValue = disjuntorDRInput.disabled ? "Sem DR" : disjuntorDRInput.value + " A";
+    const dataFabricacaoValue = dataFabricacaoInput.disabled ? "Não tem" : new Date(dataFabricacaoInput.value).toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+
+    // Objeto para o LAUDO VISUAL
+    const laudoData = {
+        // Informações Gerais
+        raId: document.getElementById("raId").value,
+        cliente: document.getElementById("cliente").value,
+        dataGeracao: new Date().toLocaleDateString('pt-BR'),
+        equipamento: modeloSelecionado,
+        codigoEquipamento: infoModelo.codigo,
+        tensaoPotencia: infoModelo.tensaoPotencia,
+        numSerie: document.getElementById("numSerie").value,
+        dataFabricacao: dataFabricacaoValue,
+        defeito: `${codDefeitoSelecionado} - ${nomeDefeito}`,
+        causa: `${codCausaSelecionado} - ${nomeCausa}`,
+        garantia: document.getElementById("garantia").value,
+        atendimento: document.getElementById("tipoAtendimento").value,
+        localAtendimento: document.getElementById("localAtendimento").value,
+        acessorios: Array.from(document.querySelectorAll('input[name="acessorios"]:checked')).map(el => el.value).join(', ') || 'Nenhum',
+        obsTecnicas: document.getElementById("obsTecnicas").value.replace(/\n/g, '<br>'),
+        
+        // Resultados dos Testes
+        testes: {
+            corrente: `R: ${document.getElementById("correnteR").value || 'N/A'} A, S: ${document.getElementById("correnteS").value || 'N/A'} A, T: ${document.getElementById("correnteT").value || 'N/A'} A`,
+            tensao: `R: ${document.getElementById("tensaoR").value || 'N/A'} V, S: ${document.getElementById("tensaoS").value || 'N/A'} V, T: ${document.getElementById("tensaoT").value || 'N/A'} V`,
+        },
+
+        // Informações da Instalação (se aplicável)
+        instalacao: {
+            disjuntorAparelho: document.getElementById("disjuntorAparelho").value + " A",
+            bitolaFio: document.getElementById("bitolaFio").value + " mm²",
+            distanciaEletrica: document.getElementById("distanciaEletrica").value + " m",
+            disjuntorDR: disjuntorDRValue,
+            // ADICIONADO AQUI
+            comprimentoTubulacao: document.getElementById("comprimentoTubulacao").value + " m",
+            diametroTubulacao: document.getElementById("diametroTubulacao").value + " mm",
+            qtdCotovelos: document.getElementById("qtdCotovelos").value,
+            usaReducao: document.getElementById("usaReducao").value,
+        },
+        ambiente: {
+            medidas: `Alt. Maior: ${document.getElementById("medidaAlturaMaior").value}m, Alt. Menor: ${document.getElementById("medidaAlturaMenor").value}m, Largura: ${document.getElementById("medidaLargura").value}m, Comprimento: ${document.getElementById("medidaComprimento").value}m`,
+            volume: document.getElementById("volumeCalculado").value + " m³",
+            diametroRespiro: document.getElementById("diametroRespiro").value + " mm",
+            distanciaBulbo: document.getElementById("distanciaBulbo").value + " m",
+            temIsolacao: document.getElementById("temIsolacao").value,
+        },
+        outrasInfos: {
+            quadroInstalado: document.getElementById("quadroInstalado").value,
+            usoGerador: document.getElementById("usoGerador").value,
+            quemAvaliou: document.getElementById("quemAvaliou").value,
+            tipoAbastecimento: document.getElementById("tipoAbastecimento").value,
+        },
+
+        // Peças e Fotos
+        pecasSelecionadas: Array.from(document.querySelectorAll('#pecasLista input[type="checkbox"]:checked')).map(el => {
+            const container = el.closest('.peca-item');
+            const quantidadeInput = container.querySelector('.quantidade-input');
+            return { codigo: el.value, nome: el.dataset.nome, quantidade: quantidadeInput.value };
+        }),
+        imagens: imagensParaLaudo
+    };
+    
+    // Objeto para a PLANILHA (formato esperado pelo Apps Script)
+    const payloadParaPlanilha = {
+        token: TOKEN,
+        raId: laudoData.raId,
+        dataAtendimento: laudoData.dataGeracao,
+        localAtendimento: laudoData.localAtendimento,
+        cliente: laudoData.cliente,
+        modelo: laudoData.equipamento,
+        codigo: laudoData.codigoEquipamento,
+        familia: infoModelo.familia,
+        dataFabricacao: laudoData.dataFabricacao,
+        defeito: nomeDefeito,
+        codigoDefeito: codDefeitoSelecionado,
+        causa: nomeCausa,
+        codigoCausa: codCausaSelecionado,
+        tipoGarantia: laudoData.garantia,
+        atendimento: laudoData.atendimento,
+        pecas: laudoData.pecasSelecionadas
+    };
+
+    const basePath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const caminhoLogo = basePath + 'logolaudo.jpg';
+
+    // 3. GERAÇÃO DA NOVA JANELA
+    const novaJanela = window.open('', '_blank');
+    novaJanela.document.write(`
+        <!DOCTYPE html><html><head><title>Laudo Técnico - RA/ID ${laudoData.raId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+            .container { max-width: 800px; margin: auto; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 16px; }
+            th, td { border: 1px solid #000; padding: 6px; text-align: left; font-size: 14px; }
+            th { background-color: #e9ecef; }
+            .section { margin-bottom: 25px; page-break-inside: avoid; }
+            .section h2 { font-size: 14px; background-color: #002060; color: #fff; padding: 8px; margin: 0 0 10px 0; border-radius: 4px; }
+            .fotos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .fotos-grid img { width: 100%; height: 5cm; object-fit: cover; border: 1px solid #ccc; border-radius: 4px; }
+            .header-table td { vertical-align: middle; }
+            .logo-cell img { max-width: 180px; }
+            .company-name { background-color: #002060; color: white; text-align: center; font-size: 16px; padding: 8px; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; }
+            .info-item { padding: 4px 0; border-bottom: 1px dotted #ccc; }
+            .info-item span { font-weight: bold; }
+            .assinaturas-section { display: flex; justify-content: space-around; margin-top: 60px; text-align: center; }
+            .assinatura-box { width: 300px; border-top: 1px solid #000; padding-top: 5px; }
+            .button-container { text-align: center; margin-top: 30px; }
+            .section p {
+                font-size: 16px;
+            }
+            .button { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; color: white; margin: 0 10px; }
+            .print-btn { background-color: #007bff; }
+            .save-btn { background-color: #28a745; }
+            .save-btn:disabled { background-color: #6c757d; }
+            @media print { 
+              .no-print { display: none; }
+              body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .section h2 { background-color: #002060 !important; color: #fff !important; }
+            }
+          </style>
+        </head><body><div class="container">
+            <table class="header-table">
+              <tr>
+                <td class="logo-cell" style="width: 200px; text-align: center;"><img src="${caminhoLogo}" alt="Logo"></td>
+                <td>
+                  <table style="margin-bottom: 0;">
+                    <tr><td class="company-name" colspan="2">SODRAMAR INDUSTRIA E COMERCIO LTDA</td></tr>
+                    <tr><td><strong>Laudo técnico - Sauna a Vapor</strong></td><td rowspan="2" style="text-align:center;">${laudoData.dataGeracao}</td></tr>
+                    <tr><td><strong>RA/ID:</strong> ${laudoData.raId}</td></tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <div class="section">
+                <h2>INFORMAÇÕES GERAIS</h2>
+                <div class="info-grid">
+                    <div class="info-item"><span>Cliente:</span> ${laudoData.cliente}</div>
+                    <div class="info-item"><span>Equipamento:</span> ${laudoData.equipamento}</div>
+                    <div class="info-item"><span>Código:</span> ${laudoData.codigoEquipamento}</div>
+                    <div class="info-item"><span>Tensão/Potência:</span> ${laudoData.tensaoPotencia}</div>
+                    <div class="info-item"><span>Nº de Série:</span> ${laudoData.numSerie}</div>
+                    <div class="info-item"><span>Data de Fabricação:</span> ${laudoData.dataFabricacao}</div>
+                    <div class="info-item"><span>Garantia:</span> ${laudoData.garantia}</div>
+                    <div class="info-item"><span>Atendimento:</span> ${laudoData.atendimento}</div>
+                    ${laudoData.atendimento !== 'Atendimento Interno' ? `<div class="info-item"><span>Local:</span> ${laudoData.localAtendimento}</div>` : ''}
+                </div>
+                <div class="info-item"><span>Defeito:</span> ${laudoData.defeito}</div>
+                <div class="info-item"><span>Causa:</span> ${laudoData.causa}</div>
+                <div class="info-item"><span>Acessórios:</span> ${laudoData.acessorios}</div>
+            </div>
+            
+            <div class="section"><h2>OBSERVAÇÕES TÉCNICAS</h2><p style="font-size: 16px;">${laudoData.obsTecnicas}</p></div>
+
+             <div class="section">
+                <h2>RESULTADOS DOS TESTES</h2>
+                 <table>
+                    <tr><td>Corrente (R,S,T)</td><td>${laudoData.testes.corrente}</td></tr>
+                    <tr><td>Tensão (R,S,T)</td><td>${laudoData.testes.tensao}</td></tr>
+                 </table>
+            </div>
+
+            ${laudoData.atendimento !== 'Atendimento Interno' ? `
+            <div class="section">
+              <h2>INFORMAÇÕES DA INSTALAÇÃO E AMBIENTE</h2>
+              <table>
+                <tr><th colspan="2">Instalação Elétrica</th></tr>
+                <tr><td>Disjuntor do Aparelho</td><td>${laudoData.instalacao.disjuntorAparelho}</td></tr>
+                <tr><td>Bitola do Fio</td><td>${laudoData.instalacao.bitolaFio}</td></tr>
+                <tr><td>Distância Disjuntor-Equipamento</td><td>${laudoData.instalacao.distanciaEletrica}</td></tr>
+                <tr><td>Disjuntor DR</td><td>${laudoData.instalacao.disjuntorDR}</td></tr>
+              </table>
+              <table>
+                <tr><th colspan="2">Instalação Hidráulica e Vapor</th></tr>
+                <tr><td>Comprimento Tubulação Vapor</td><td>${laudoData.instalacao.comprimentoTubulacao}</td></tr>
+                <tr><td>Diâmetro da Tubulação</td><td>${laudoData.instalacao.diametroTubulacao}</td></tr>
+                <tr><td>Quantidade de Cotovelos</td><td>${laudoData.instalacao.qtdCotovelos}</td></tr>
+                <tr><td>Usa Redução na Saída?</td><td>${laudoData.instalacao.usaReducao}</td></tr>
+              </table>
+              <table>
+                <tr><th colspan="2">Informações do Ambiente</th></tr>
+                <tr><td>Medidas (Alt/Larg/Comp)</td><td>${laudoData.ambiente.medidas}</td></tr>
+                <tr><td>Volume Calculado</td><td>${laudoData.ambiente.volume}</td></tr>
+                <tr><td>Diâmetro do Respiro</td><td>${laudoData.ambiente.diametroRespiro}</td></tr>
+                <tr><td>Distância do Bulbo Sensor</td><td>${laudoData.ambiente.distanciaBulbo}</td></tr>
+                <tr><td>Isolação com Vermiculita?</td><td>${laudoData.ambiente.temIsolacao}</td></tr>
+              </table>
+              <table>
+                <tr><th colspan="2">Outras Informações</th></tr>
+                <tr><td>Quadro Instalado</td><td>${laudoData.outrasInfos.quadroInstalado}</td></tr>
+                <tr><td>Como é feito o Abastecimento?</td><td>${laudoData.outrasInfos.tipoAbastecimento}</td></tr>
+                <tr><td>Tipo de Uso</td><td>${laudoData.outrasInfos.usoGerador}</td></tr>
+                <tr><td>Avaliador</td><td>${laudoData.outrasInfos.quemAvaliou}</td></tr>
+              </table>
+            </div>
+            ` : ''}
+
+            <div class="section"><h2>FOTOS DO EQUIPAMENTO</h2><div class="fotos-grid">${laudoData.imagens.map(src => `<img src="${src}">`).join('')}</div></div>
+            
+            ${laudoData.pecasSelecionadas.length > 0 ? `
+            <div class="section">
+              <h2>PEÇAS PARA REPOSIÇÃO</h2>
+              <table>
+                <thead><tr><th>Código</th><th>Descrição</th><th>Quantidade</th></tr></thead>
+                <tbody>${laudoData.pecasSelecionadas.map(p => `<tr><td>${p.codigo}</td><td>${p.nome}</td><td>${p.quantidade}</td></tr>`).join('')}</tbody>
+              </table>
+            </div>
+            ` : ''}
+            
+            <div class="assinaturas-section">
+                <div class="assinatura-box">Supervisor</div>
+                <div class="assinatura-box">Técnico</div>
+            </div>
+
+            <div class="button-container no-print">
+              <button id="saveBtn" class="button save-btn" onclick="salvarNaPlanilha()">Salvar na Planilha</button>
+              <button class="button print-btn" onclick="window.print()">Imprimir</button>
+            </div>
+        </div>
+        <script>
+            const WEB_APP_URL = '${WEB_APP_URL}';
+            const payload = ${JSON.stringify(payloadParaPlanilha)};
+            async function salvarNaPlanilha() {
+                const btn = document.getElementById('saveBtn');
+                btn.disabled = true;
+                btn.textContent = 'Salvando...';
+                try {
+                    const response = await fetch(WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload),
+                        mode: 'cors'
+                    });
+                    const result = await response.json();
+                    if (result.ok) {
+                        alert('Dados salvos com sucesso! ✅');
+                        btn.textContent = 'Salvo!';
+                        btn.style.backgroundColor = '#17a2b8';
+                    } else { throw new Error(result.error); }
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('❌ Falha ao salvar os dados.\\nVerifique o console (F12) para detalhes.');
+                    btn.disabled = false;
+                    btn.textContent = 'Tentar Novamente';
+                }
+            }
+        <\/script>
+        </body></html>
+    `);
+    novaJanela.document.close();
+}
+</script>
+</body>
+</html>
